@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import diff from "color-diff";
 import hexToRgb from "./helper/hexToRgb";
+import rgb2hex from "./helper/rgb2hex";
+import getName from "./helper/getName";
 import axios from "axios";
 import dbtypeToRgb from "./helper/dbtypeToRgb";
 import Color3d from "color3d";
@@ -19,22 +21,22 @@ export const ColorForm = () => {
         const res = await axios.get("/get");
         setColors(res.data);
         setPalette(dbtypeToRgb(res.data));
-        console.log(res.data);
       } catch (err) {
         console.error(err);
       }
     }
     fetchColors();
   }, []);
-  const black = [255, 255, 255];
-  const [color, setColor] = useState(black);
-  const [nearColor, setNearColor] = useState(false);
+  const [color, setColor] = useState([255, 255, 255]); //initial color is black.
+  const [nearRGB, setNearRGB] = useState(false);
+  const [nearHex, setNearHex] = useState(false);
   useEffect(() => {
     const near = diff.closest(
       { R: color[0], G: color[1], B: color[2] },
       palette
     );
-    setNearColor([near.R, near.G, near.B]);
+    setNearRGB([near.R, near.G, near.B]);
+    setNearHex(rgb2hex([near.R, near.G, near.B]));
   }, [color]);
 
   const color3d = new Color3d(
@@ -56,12 +58,13 @@ export const ColorForm = () => {
     }
   );
   //console.log(color3d);
-  color3d.render(document.getElementById("container"));
+  //color3d.render(document.getElementById("container"));
 
   return (
     <main>
       <h1>{`R: ${color[0]} G: ${color[1]} B: ${color[2]}`}</h1>
-      <h2>{nearColor}</h2>
+      <h2>{nearRGB}</h2>
+      <h2>{nearHex}</h2>
       {/* <h3>{`R: ${colors[3].r} G: ${colors[3].g} B: ${colors[3].b}`}</h3> */}
       <input
         type="color"
@@ -69,7 +72,8 @@ export const ColorForm = () => {
           setColor(hexToRgb(e.target.value));
         }}
       ></input>
-      <div id="container">color3d</div>
+      <h1 style={{ color: nearHex }}>{getName(nearRGB, colors)}</h1>
+      {/* <div id="container">color3d</div> */}
     </main>
   );
 };
